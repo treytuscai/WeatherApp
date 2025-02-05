@@ -4,8 +4,107 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Weather App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .error {
+            color: red;
+            text-align: center;
+        }
+        .weather-info {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e8f5e9;
+            border: 1px solid #4CAF50;
+            border-radius: 5px;
+        }
+    </style>
 </head>
 <body>
-    
+    <div class="container">
+        <h1>Weather Information</h1>
+        <form id="weatherForm">
+            <input type="text" id="city" placeholder="Enter City" required>
+            <input type="text" id="country" placeholder="Enter Country" required>
+            <button type="submit">Get Weather</button>
+        </form>
+        <div id="error-message" class="error"></div>
+        <div id="weather-info" class="weather-info" style="display:none;"></div>
+    </div>
+
+    <script>
+        document.getElementById('weatherForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            // Clear previous error or weather info
+            document.getElementById('error-message').innerHTML = '';
+            document.getElementById('weather-info').style.display = 'none';
+
+            const city = document.getElementById('city').value.trim();
+            const country = document.getElementById('country').value.trim();
+
+            // Make the API call to your Flask endpoint
+            const url = `/weather?city=${encodeURIComponent(city)}&country=${encodeURIComponent(country)}`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+
+                    const cityName = data.city;
+                    const countryName = data.country;
+                    const temperature = data.temperature;
+                    const description = data.description;
+
+                    // Display weather information
+                    const weatherInfo = `
+                        <h3>Weather in ${cityName}, ${countryName}</h3>
+                        <p><strong>Temperature:</strong> ${temperature}°C</p>
+                        <p><strong>Condition:</strong> ${description}</p>
+                    `;
+                    document.getElementById('weather-info').innerHTML = weatherInfo;
+                    document.getElementById('weather-info').style.display = 'block';
+                })
+                .catch(error => {
+                    document.getElementById('error-message').innerHTML = 'Error fetching weather data: ' + error.message;
+                });
+        });
+    </script>
 </body>
 </html>

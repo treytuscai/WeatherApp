@@ -1,7 +1,12 @@
 from flask import Blueprint, render_template, jsonify
 from flask import request
-import requests
 import os
+from website.weather_utils import (
+    validate_city_and_country,
+    build_weather_api_url,
+    fetch_weather_data,
+    parse_weather_response
+)
 
 # Create a blueprint
 main_blueprint = Blueprint('main', __name__)
@@ -13,23 +18,21 @@ BASE_URL = "https://api.openweathermap.org/data/2.5/weather"
 def weather():
     return render_template('index.html')
 
-@main_blueprint.route("/weather/<city>", methods=["GET"])
-def get_weather(city):
+@main_blueprint.route('/weather', methods=['GET'])
+def get_weather():
+    """Endpoint to get weather data based on city and country."""
+    city = request.args.get('city')
+    country = request.args.get('country')
 
-    params = {
-        "q": city,  # City
-        "appid": API_KEY,  # API Key
-        "units": "metric"  # Celsius 
-    }
+    if not validate_city_and_country(city, country):
+        return jsonify({"error": "Invalid city or country format."}), 400
 
-    response = requests.get(BASE_URL, params=params)
+    url = build_weather_api_url(city, country, API_KEY)
+    response_data, status_code = fetch_weather_data(url)
 
-    # If API call was successful
-    if response.status_code == 200:
-        data = response.json()
-        # Extract weather data
-        temperature = data["main"]["temp"]
-        unit = "C"
-        return jsonify({"temperature": temperature, "unit": unit})
-    else:
-        return jsonify({"error": "City not found"}), 404
+    if status_code != 200:
+        return jsonify(response_data), status_code
+
+    weather_info = parse_weather_response(response_data)
+    return jsonify(weather_info)
+

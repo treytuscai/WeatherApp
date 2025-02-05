@@ -1,20 +1,156 @@
-import pytest
-from app import app  # Import Flask app
+from unittest.mock import patch
 
-@pytest.fixture
-def client():
-    """Create a test client for Flask app."""
-    app.config["TESTING"] = True
-    with app.test_client() as client:
-        yield client
+@patch("requests.get")
+def test_get_weather_success(mock_get, mock_weather_response, client):
+    """Test if get_weather returns correct data for a valid city and country."""
+    
+    # Mock the response from OpenWeather API
+    mock_get.return_value.status_code = 200
+    mock_get.return_value.json.return_value = mock_weather_response
 
-def test_weather_endpoint(client):
-    """Test Flask API endpoint for fetching weather."""
-    response = client.get("/weather/London")
+    response = client.get("/weather?city=London&country=GB")
     assert response.status_code == 200
-    assert "temperature" in response.get_json()
+    
+    data = response.get_json()
+    assert data["city"] == "London"
+    assert data["country"] == "GB"
+    assert data["temperature"] == 25.0
+    assert data["description"] == "clear sky"
+    assert data["humidity"] == 60
 
-def test_weather_endpoint_invalid_city(client):
-    """Test endpoint with an invalid city."""
-    response = client.get("/weather/InvalidCity")
+def test_get_weather_missing_city(client):
+    """Test if get_weather returns correct data for a missing city."""
+
+    response = client.get("/weather?country=GB")
+    data = response.get_json()
+    assert response.status_code == 400
+    assert data["error"] == "Invalid city or country format."
+
+def test_get_weather_missing_country(client):
+    """Test if get_weather returns correct data for a missing country."""
+
+    response = client.get("/weather?city=London")
+    data = response.get_json()
+    assert response.status_code == 400
+    assert data["error"] == "Invalid city or country format."
+
+def test_get_weather_invalid_country_format(client):
+    """Test if get_weather returns correct data for an invalid country format."""
+
+    response = client.get("/weather?city=London&country=test")
+    data = response.get_json()
+    assert response.status_code == 400
+    assert data["error"] == "Invalid city or country format."
+
+def test_get_weather_invalid_city_format(client):
+    """Test if get_weather returns correct data for an invalid city format."""
+
+    response = client.get("/weather?city=123&country=GB")
+    data = response.get_json()
+    assert response.status_code == 400
+    assert data["error"] == "Invalid city or country format."
+
+@patch("requests.get")
+def test_get_weather_invalid_country(mock_get, client):
+    """Test if get_weather returns correct data for an invalid country code."""
+    
+    # Mock the response from OpenWeather API
+    mock_get.return_value.status_code = 404
+    mock_get.return_value.json.return_value = {"error": "City not found or invalid API request."}
+
+    response = client.get("/weather?city=London&country=XX")
+    data = response.get_json()
     assert response.status_code == 404
+    assert data["error"] == "City not found or invalid API request."
+
+@patch("requests.get")
+def test_get_weather_invalid_city(mock_get, client):
+    """Test if get_weather returns correct data for an invalid city."""
+    
+    # Mock the response from OpenWeather API
+    mock_get.return_value.status_code = 404
+    mock_get.return_value.json.return_value = {"error": "City not found or invalid API request."}
+
+    response = client.get("/weather?city=Testtest&country=GB")
+    data = response.get_json()
+    assert response.status_code == 404
+    assert data["error"] == "City not found or invalid API request."
+
+@patch("requests.get")
+def test_get_weather_bad_request(mock_get, client):
+    """Test if get_weather returns correct data for a bad request (400)."""
+    
+    # Mock the response from OpenWeather API
+    mock_get.return_value.status_code = 400
+    mock_get.return_value.json.return_value = {"error": "Bad request, check parameters or API key."}
+
+    response = client.get("/weather?city=London&country=GB")
+    data = response.get_json()
+    assert response.status_code == 400
+    assert data["error"] == "Bad request, check parameters or API key."
+
+@patch("requests.get")
+def test_get_weather_unauthorized(mock_get, client):
+    """Test if get_weather returns correct data for unauthorized (401)."""
+    
+    # Mock the response from OpenWeather API
+    mock_get.return_value.status_code = 401
+    mock_get.return_value.json.return_value = {"error": "Unauthorized, check your API key."}
+
+    response = client.get("/weather?city=London&country=GB")
+    data = response.get_json()
+    assert response.status_code == 401
+    assert data["error"] == "Unauthorized, check your API key."
+
+@patch("requests.get")
+def test_get_weather_forbidden(mock_get, client):
+    """Test if get_weather returns correct data for forbidden access (403)."""
+    
+    # Mock the response from OpenWeather API
+    mock_get.return_value.status_code = 403
+    mock_get.return_value.json.return_value = {"error": "Forbidden, access denied."}
+
+    response = client.get("/weather?city=London&country=GB")
+    data = response.get_json()
+    assert response.status_code == 403
+    assert data["error"] == "Forbidden, access denied."
+
+
+@patch("requests.get")
+def test_get_weather_internal_server_error(mock_get, client):
+    """Test if get_weather returns correct data for internal server error (500)."""
+    
+    # Mock the response from OpenWeather API
+    mock_get.return_value.status_code = 500
+    mock_get.return_value.json.return_value = {"error": "Internal server error, try again later."}
+
+    response = client.get("/weather?city=London&country=GB")
+    data = response.get_json()
+    assert response.status_code == 500
+    assert data["error"] == "Internal server error, try again later."
+
+@patch("requests.get")
+def test_get_weather_service_unavailable(mock_get, client):
+    """Test if get_weather returns correct data for service unavailable (503)."""
+    
+    # Mock the response from OpenWeather API
+    mock_get.return_value.status_code = 503
+    mock_get.return_value.json.return_value = {"error": "Service unavailable, try again later."}
+
+    response = client.get("/weather?city=London&country=GB")
+    data = response.get_json()
+    assert response.status_code == 503
+    assert data["error"] == "Service unavailable, try again later."
+
+@patch("requests.get")
+def test_get_weather_unknown_error(mock_get, client):
+    """Test if get_weather returns correct data for an unknown error."""
+    
+    # Mock the response from OpenWeather API for an unknown error
+    mock_get.return_value.status_code = 418
+    mock_get.return_value.json.return_value = {"error": "An unknown error occurred. Please try again later."}
+
+    response = client.get("/weather?city=London&country=GB")
+    data = response.get_json()
+    assert response.status_code == 418
+    assert data["error"] == "An unknown error occurred. Please try again later."

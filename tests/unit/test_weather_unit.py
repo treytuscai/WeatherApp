@@ -1,44 +1,55 @@
 import pytest
 from unittest.mock import patch
-from flask import Flask
-from weather import get_weather
-from app import app
 
-@pytest.fixture
-def mock_weather_response():
-    """Mock OpenWeather API response."""
-    return {
-        "weather": [{"description": "clear sky"}],
+from website.weather_utils import (
+    validate_city_and_country,
+    build_weather_api_url,
+    fetch_weather_data,
+    parse_weather_response
+)
+
+@pytest.mark.parametrize("city, country, expected", [
+    ("London", "GB", True),
+    ("NewYork", "US", True),
+    ("123", "GB", False),
+    ("London", "gbr", False),
+    ("Paris", "FRA", False),
+])
+def test_validate_city_and_country(city, country, expected):
+    """Test if valid country or city format."""
+    assert validate_city_and_country(city, country) == expected
+
+def test_parse_weather_response():
+    """Test if weather data is correctly extracted from API response."""
+    mock_response = {
+        "name": "London",
+        "sys": {"country": "GB"},
         "main": {"temp": 25.0, "humidity": 60},
-        "name": "London"
+        "weather": [{"description": "clear sky"}],
     }
+    
+    expected_data = {
+        "city": "London",
+        "country": "GB",
+        "temperature": 25.0,
+        "description": "clear sky",
+        "humidity": 60,
+    }
+    
+    assert parse_weather_response(mock_response) == expected_data
 
-@pytest.fixture
-def client():
-    """Create a test client for Flask app."""
-    app.config["TESTING"] = True
-    with app.test_client() as client:
-        yield client
+def test_build_weather_api_url():
+    """Tests constructing the OpenWeather API URL."""
+    city, country, api_key = "London", "GB", "test_key"
+    expected_url = "http://api.openweathermap.org/data/2.5/weather?q=London,GB&appid=test_key&units=metric"
+    assert build_weather_api_url(city, country, api_key) == expected_url
 
-@patch("requests.get")
-def test_get_weather_success(mock_get, mock_weather_response, client):
-    """Test if get_weather returns correct data for a valid city."""
-    # Mock the response from OpenWeather API
-    mock_get.return_value.status_code = 200
-    mock_get.return_value.json.return_value = mock_weather_response
-
-    response = client.get("/weather/London")
-    assert response.status_code == 200
-    data = response.get_json()
-    assert data["temperature"] == 25.0
-    assert data["unit"] == "C"
 
 @patch("requests.get")
-def test_get_weather_api_error(mock_get, client):
-    """Test API error handling (e.g., invalid city)."""
-    # Mock the response for an invalid city
+def test_fetch_weather_data_error(mock_get):
+    """Tests making the API request and handling response errors."""
     mock_get.return_value.status_code = 404
-    mock_get.return_value.json.return_value = {"error": "City not found"}
-
-    response = client.get("/weather/InvalidCity")
-    assert response.status_code == 404
+    response, status_code = fetch_weather_data("fake_url")
+    
+    assert status_code == 404
+    assert response["error"] == "City not found or invalid API request."
