@@ -1,6 +1,6 @@
 # conftest.py
 import pytest
-from app import app  # Import your app or necessary setup
+from app import app
 
 @pytest.fixture
 def client():

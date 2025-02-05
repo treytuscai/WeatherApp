@@ -1,4 +1,36 @@
 from unittest.mock import patch
+from website.weather_utils import (
+    validate_city_and_country,
+    build_weather_api_url,
+    fetch_weather_data,
+    parse_weather_response,
+)
+
+@patch("requests.get")
+def test_weather_utils(mock_get, mock_weather_response):
+    """Functional test integrating all helper functions."""
+    API_KEY = "test_api_key"
+    CITY = "London"
+    COUNTRY = "GB"
+
+    WEATHER_API_URL = build_weather_api_url(CITY, COUNTRY, API_KEY)
+    assert validate_city_and_country(CITY, COUNTRY) == True
+    
+    expected_url = f"http://api.openweathermap.org/data/2.5/weather?q={CITY},{COUNTRY}&appid={API_KEY}&units=metric"
+    assert WEATHER_API_URL == expected_url
+
+    mock_get.return_value.status_code = 200
+    mock_get.return_value.json.return_value = mock_weather_response
+    response_data, status_code = fetch_weather_data(WEATHER_API_URL)
+    assert status_code == 200
+    assert response_data == mock_weather_response
+
+    parsed_data = parse_weather_response(response_data)
+    assert parsed_data["city"] == CITY
+    assert parsed_data["country"] == COUNTRY
+    assert parsed_data["temperature"] == 25.0
+    assert parsed_data["description"] == "clear sky"
+    assert parsed_data["humidity"] == 60
 
 @patch("requests.get")
 def test_get_weather_success(mock_get, mock_weather_response, client):
