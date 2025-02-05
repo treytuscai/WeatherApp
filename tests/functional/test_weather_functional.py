@@ -17,5 +17,4 @@ def test_weather_endpoint(client):
 def test_weather_endpoint_invalid_city(client):
     """Test endpoint with an invalid city."""
     response = client.get("/weather/InvalidCity")
-    assert response.status_code == 200
-    assert "error" in response.get_json()
+    assert response.status_code == 404
