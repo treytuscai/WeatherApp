@@ -33,7 +33,9 @@ def fetch_weather_data(url: str):
 
     if response.status_code == 404:
         return {"error": "City not found or invalid API request."}, 404
-    if response.status_code == 500:
+    elif response.status_code == 403:
+        return {"error": "Forbidden API request."}, 403
+    elif response.status_code == 500:
         return {"error": "Internal server error, try again later."}, 500
     elif response.status_code != 200:
         return {"error": "An unknown error occurred. Please try again later."}, 418

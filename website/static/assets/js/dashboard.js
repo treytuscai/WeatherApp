@@ -8,8 +8,14 @@ function fetchWeatherData(city, country) {
         .then(data => {
             if (data.error) {
                 console.error('Error:', data.error);
+                displayError(data.error);
                 return;
             }
+
+            const errorSection = document.getElementById('weather-error');
+            const errorMessage = document.getElementById('error-message');
+            errorMessage.textContent = "";
+            errorSection.style.display = 'none';
 
             const currentTime = new Date();
             const hours = currentTime.getHours();
@@ -32,12 +38,14 @@ function fetchWeatherData(city, country) {
             document.getElementById('pressure').textContent = `${weather.pressure} mb`;
             document.getElementById('dew-point').textContent = `${weather.dew_point}°C`;
 
+            let locationText = `${city}, ${country}`;
+            document.getElementById("cityDropdown").innerHTML = `${locationText} <i class="bi bi-caret-down-fill"></i>`;
+
             const iconUrl = `https://openweathermap.org/img/wn/${data.icon}.png`;
-            document.getElementById('weather-icon').src = iconUrl;
+            document.getElementById("weather-icon").src = iconUrl;
         })
         .catch(error => {
             console.error('Error fetching weather data:', error);
-            displayError("An unexpected error occurred while fetching weather data.");
         });
 }
 
