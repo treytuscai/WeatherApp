@@ -23,3 +23,7 @@ def mock_weather_response():
         "main": {"temp": 25.0, "humidity": 60},
         "weather": [{"description": "clear sky"}]
     }
+
+@pytest.fixture
+def mock_lat_lon_response():
+    return {"lat": 51.5074, "lon": -0.1278}

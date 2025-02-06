@@ -1,11 +1,12 @@
 import pytest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 from website.weather_utils import (
     validate_city_and_country,
     build_weather_api_url,
     fetch_weather_data,
-    parse_weather_response
+    parse_weather_response,
+    get_lat_lon_from_city
 )
 
 @pytest.mark.parametrize("city, country, expected", [
@@ -20,28 +21,71 @@ def test_validate_city_and_country(city, country, expected):
     assert validate_city_and_country(city, country) == expected
 
 def test_parse_weather_response():
-    """Test if weather data is correctly extracted from API response."""
+    """Test if weather data is correctly extracted from the OneCall API response."""
     mock_response = {
-        "name": "London",
-        "sys": {"country": "GB"},
-        "main": {"temp": 25.0, "humidity": 60},
-        "weather": [{"description": "clear sky"}],
+        "current": {
+            "temp": 25.0,
+            "feels_like": 23.0,
+            "pressure": 1015,
+            "humidity": 70,
+            "wind_speed": 5.0,
+            "visibility": 10000,
+            "clouds": 40,
+            "weather": [
+                {
+                    "main": "Clear",
+                    "icon": "01d"
+                }
+            ],
+            "sunrise": 1684926645,
+            "sunset": 1684977332,
+            "dew_point": 20.0
+        },
+        "daily": [
+            {
+                "summary": "Clear sky with no significant changes in the weather."
+            }
+        ]
     }
-    
+
     expected_data = {
-        "city": "London",
-        "country": "GB",
         "temperature": 25.0,
-        "description": "clear sky",
-        "humidity": 60,
+        "feels_like": 23.0,
+        "pressure": 1015,
+        "humidity": 70,
+        "wind_speed": 5.0,
+        "visibility": 10000,
+        "clouds": 40,
+        "description": "Clear",
+        "detailed_description": "Clear sky with no significant changes in the weather.",
+        "icon": "01d",
+        "sunrise": 1684926645,
+        "sunset": 1684977332,
+        "dew_point": 20.0
     }
-    
-    assert parse_weather_response(mock_response) == expected_data
+
+    parsed_data = parse_weather_response(mock_response)
+
+    # Assert that the parsed data matches the expected data
+    assert parsed_data["temperature"] == expected_data["temperature"]
+    assert parsed_data["feels_like"] == expected_data["feels_like"]
+    assert parsed_data["pressure"] == expected_data["pressure"]
+    assert parsed_data["humidity"] == expected_data["humidity"]
+    assert parsed_data["wind_speed"] == expected_data["wind_speed"]
+    assert parsed_data["visibility"] == expected_data["visibility"]
+    assert parsed_data["clouds"] == expected_data["clouds"]
+    assert parsed_data["description"] == expected_data["description"]
+    assert parsed_data["detailed_description"] == expected_data["detailed_description"]
+    assert parsed_data["icon"] == expected_data["icon"]
+    assert parsed_data["sunrise"] == expected_data["sunrise"]
+    assert parsed_data["sunset"] == expected_data["sunset"]
+    assert parsed_data["dew_point"] == expected_data["dew_point"]
+
 
 def test_build_weather_api_url():
     """Tests constructing the OpenWeather API URL."""
-    city, country, api_key = "London", "GB", "test_key"
-    expected_url = "http://api.openweathermap.org/data/2.5/weather?q=London,GB&appid=test_key&units=metric"
+    city, country, api_key = "0", "0", "test_key"
+    expected_url = "https://api.openweathermap.org/data/3.0/onecall?lat=0&lon=0&exclude=minutely,hourly&appid=test_key&units=metric"
     assert build_weather_api_url(city, country, api_key) == expected_url
 
 
@@ -53,3 +97,28 @@ def test_fetch_weather_data_error(mock_get):
     
     assert status_code == 404
     assert response["error"] == "City not found or invalid API request."
+
+
+@patch('requests.get')
+def test_get_lat_lon_from_city_value_error(mock_get):
+    """Test if ValueError is raised when no data is returned from the API."""
+    
+    mock_response = MagicMock()
+    mock_response.json.return_value = []
+    mock_get.return_value = mock_response
+    
+    with pytest.raises(ValueError, match="Unable to fetch latitude and longitude"):
+        get_lat_lon_from_city("London", "GB", "your_api_key")
+
+@patch('requests.get')
+def test_fetch_weather_data_500_error(mock_get):
+    """Test if fetch_weather_data handles 500 error correctly."""
+
+    mock_response = MagicMock()
+    mock_response.status_code = 500
+    mock_response.json.return_value = {"error": "Internal server error, try again later."}
+    mock_get.return_value = mock_response
+    
+    response_data, status_code = fetch_weather_data("http://api.openweathermap.org/data/2.5/weather?q=London&appid=your_api_key")
+    assert status_code == 500
+    assert response_data["error"] == "Internal server error, try again later."

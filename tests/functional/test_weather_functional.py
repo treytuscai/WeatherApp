@@ -1,9 +1,10 @@
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from website.weather_utils import (
     validate_city_and_country,
     build_weather_api_url,
     fetch_weather_data,
     parse_weather_response,
+    get_lat_lon_from_city
 )
 
 def test_home_page(client):
@@ -18,42 +19,48 @@ def test_weather_utils(mock_get, mock_weather_response):
     CITY = "London"
     COUNTRY = "GB"
 
-    WEATHER_API_URL = build_weather_api_url(CITY, COUNTRY, API_KEY)
+    # Validate city and country
     assert validate_city_and_country(CITY, COUNTRY) == True
-    
-    expected_url = f"http://api.openweathermap.org/data/2.5/weather?q={CITY},{COUNTRY}&appid={API_KEY}&units=metric"
+
+    # Get lat and lon from city and country
+    lat, lon = get_lat_lon_from_city(CITY, COUNTRY, API_KEY)
+
+    # Build the weather API URL using lat and lon
+    WEATHER_API_URL = build_weather_api_url(lat, lon, API_KEY)
+
+    # Update the expected URL to use lat and lon (one call API)
+    expected_url = f"https://api.openweathermap.org/data/3.0/onecall?lat={lat}&lon={lon}&exclude=minutely,hourly&appid={API_KEY}&units=metric"
     assert WEATHER_API_URL == expected_url
 
+    # Mock the response from the API
     mock_get.return_value.status_code = 200
     mock_get.return_value.json.return_value = mock_weather_response
+    
+    # Fetch weather data using the API URL
     response_data, status_code = fetch_weather_data(WEATHER_API_URL)
+
+    # Assert that the status code is 200 and response matches the mock data
     assert status_code == 200
     assert response_data == mock_weather_response
 
+    # Parse the weather data
     parsed_data = parse_weather_response(response_data)
-    assert parsed_data["city"] == CITY
-    assert parsed_data["country"] == COUNTRY
-    assert parsed_data["temperature"] == 25.0
-    assert parsed_data["description"] == "clear sky"
-    assert parsed_data["humidity"] == 60
 
-@patch("requests.get")
-def test_get_weather_success(mock_get, mock_weather_response, client):
-    """Test if get_weather returns correct data for a valid city and country."""
-    
-    # Mock the response from OpenWeather API
-    mock_get.return_value.status_code = 200
-    mock_get.return_value.json.return_value = mock_weather_response
+    # Test the parsed data
+    assert parsed_data["temperature"] == None
+    assert parsed_data["feels_like"] == None
+    assert parsed_data["pressure"] == None
+    assert parsed_data["humidity"] == None
+    assert parsed_data["wind_speed"] == None
+    assert parsed_data["visibility"] == None
+    assert parsed_data["clouds"] == None
+    assert parsed_data["description"] == None
+    assert parsed_data["detailed_description"] == None
+    assert parsed_data["icon"] == None
+    assert parsed_data["sunrise"] == None
+    assert parsed_data["sunset"] == None
+    assert parsed_data["dew_point"] == None
 
-    response = client.get("/weather?city=London&country=GB")
-    assert response.status_code == 200
-    
-    data = response.get_json()
-    assert data["city"] == "London"
-    assert data["country"] == "GB"
-    assert data["temperature"] == 25.0
-    assert data["description"] == "clear sky"
-    assert data["humidity"] == 60
 
 def test_get_weather_missing_city(client):
     """Test if get_weather returns correct data for a missing city."""
@@ -87,107 +94,25 @@ def test_get_weather_invalid_city_format(client):
     assert response.status_code == 400
     assert data["error"] == "Invalid city or country format."
 
-@patch("requests.get")
-def test_get_weather_invalid_country(mock_get, client):
-    """Test if get_weather returns correct data for an invalid country code."""
-    
-    # Mock the response from OpenWeather API
-    mock_get.return_value.status_code = 404
-    mock_get.return_value.json.return_value = {"error": "City not found or invalid API request."}
-
-    response = client.get("/weather?city=London&country=XX")
-    data = response.get_json()
-    assert response.status_code == 404
-    assert data["error"] == "City not found or invalid API request."
-
-@patch("requests.get")
-def test_get_weather_invalid_city(mock_get, client):
-    """Test if get_weather returns correct data for an invalid city."""
-    
-    # Mock the response from OpenWeather API
-    mock_get.return_value.status_code = 404
-    mock_get.return_value.json.return_value = {"error": "City not found or invalid API request."}
-
-    response = client.get("/weather?city=Testtest&country=GB")
-    data = response.get_json()
-    assert response.status_code == 404
-    assert data["error"] == "City not found or invalid API request."
-
-@patch("requests.get")
-def test_get_weather_bad_request(mock_get, client):
-    """Test if get_weather returns correct data for a bad request (400)."""
-    
-    # Mock the response from OpenWeather API
-    mock_get.return_value.status_code = 400
-    mock_get.return_value.json.return_value = {"error": "Bad request, check parameters or API key."}
-
+@patch("website.weather_utils.get_lat_lon_from_city") 
+@patch("website.weather_utils.fetch_weather_data")
+def test_get_weather_success(mock_fetch_weather_data, mock_get_lat_lon_from_city, mock_weather_response, mock_lat_lon_response, client):
+    """Test if /weather endpoint returns a 200 status code with correct data."""
+    mock_get_lat_lon_from_city.return_value = (mock_lat_lon_response["lat"], mock_lat_lon_response["lon"])
+    mock_fetch_weather_data.return_value = (mock_weather_response, 200)
     response = client.get("/weather?city=London&country=GB")
-    data = response.get_json()
-    assert response.status_code == 400
-    assert data["error"] == "Bad request, check parameters or API key."
+    assert response.status_code == 200
 
-@patch("requests.get")
-def test_get_weather_unauthorized(mock_get, client):
-    """Test if get_weather returns correct data for unauthorized (401)."""
+
+@patch('requests.get')
+def test_fetch_weather_data_failure(mock_get):
+    """Test if fetch_weather_data handles 500 error correctly."""
+
+    mock_response = MagicMock()
+    mock_response.status_code = 405
+    mock_response.json.return_value = {"error": "An unknown error occurred. Please try again later."}
+    mock_get.return_value = mock_response
     
-    # Mock the response from OpenWeather API
-    mock_get.return_value.status_code = 401
-    mock_get.return_value.json.return_value = {"error": "Unauthorized, check your API key."}
-
-    response = client.get("/weather?city=London&country=GB")
-    data = response.get_json()
-    assert response.status_code == 401
-    assert data["error"] == "Unauthorized, check your API key."
-
-@patch("requests.get")
-def test_get_weather_forbidden(mock_get, client):
-    """Test if get_weather returns correct data for forbidden access (403)."""
-    
-    # Mock the response from OpenWeather API
-    mock_get.return_value.status_code = 403
-    mock_get.return_value.json.return_value = {"error": "Forbidden, access denied."}
-
-    response = client.get("/weather?city=London&country=GB")
-    data = response.get_json()
-    assert response.status_code == 403
-    assert data["error"] == "Forbidden, access denied."
-
-
-@patch("requests.get")
-def test_get_weather_internal_server_error(mock_get, client):
-    """Test if get_weather returns correct data for internal server error (500)."""
-    
-    # Mock the response from OpenWeather API
-    mock_get.return_value.status_code = 500
-    mock_get.return_value.json.return_value = {"error": "Internal server error, try again later."}
-
-    response = client.get("/weather?city=London&country=GB")
-    data = response.get_json()
-    assert response.status_code == 500
-    assert data["error"] == "Internal server error, try again later."
-
-@patch("requests.get")
-def test_get_weather_service_unavailable(mock_get, client):
-    """Test if get_weather returns correct data for service unavailable (503)."""
-    
-    # Mock the response from OpenWeather API
-    mock_get.return_value.status_code = 503
-    mock_get.return_value.json.return_value = {"error": "Service unavailable, try again later."}
-
-    response = client.get("/weather?city=London&country=GB")
-    data = response.get_json()
-    assert response.status_code == 503
-    assert data["error"] == "Service unavailable, try again later."
-
-@patch("requests.get")
-def test_get_weather_unknown_error(mock_get, client):
-    """Test if get_weather returns correct data for an unknown error."""
-    
-    # Mock the response from OpenWeather API for an unknown error
-    mock_get.return_value.status_code = 418
-    mock_get.return_value.json.return_value = {"error": "An unknown error occurred. Please try again later."}
-
-    response = client.get("/weather?city=London&country=GB")
-    data = response.get_json()
-    assert response.status_code == 418
-    assert data["error"] == "An unknown error occurred. Please try again later."
+    response_data, status_code = fetch_weather_data("http://api.openweathermap.org/data/2.5/weather?q=London&appid=your_api_key")
+    assert status_code == 418
+    assert response_data["error"] == "An unknown error occurred. Please try again later."

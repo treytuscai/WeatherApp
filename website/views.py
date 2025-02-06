@@ -5,14 +5,14 @@ from website.weather_utils import (
     validate_city_and_country,
     build_weather_api_url,
     fetch_weather_data,
-    parse_weather_response
+    parse_weather_response,
+    get_lat_lon_from_city
 )
 
 # Create a blueprint
 main_blueprint = Blueprint('main', __name__)
 
 API_KEY = os.getenv("API_KEY")
-BASE_URL = "https://api.openweathermap.org/data/2.5/weather"
 
 @main_blueprint.route('/', methods=['GET', 'POST'])
 def weather():
@@ -26,13 +26,17 @@ def get_weather():
 
     if not validate_city_and_country(city, country):
         return jsonify({"error": "Invalid city or country format."}), 400
-
-    url = build_weather_api_url(city, country, API_KEY)
+    
+    try:
+        lat, lon = get_lat_lon_from_city(city, country, API_KEY)
+    except ValueError:
+        return jsonify({"error": "City not found or invalid API request."}), 404
+    
+    url = build_weather_api_url(lat, lon, API_KEY)
     response_data, status_code = fetch_weather_data(url)
 
     if status_code != 200:
         return jsonify(response_data), status_code
-
     weather_info = parse_weather_response(response_data)
     return jsonify(weather_info)
 
