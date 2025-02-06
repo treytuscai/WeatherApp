@@ -31,7 +31,7 @@ def get_weather():
         lat, lon = get_lat_lon_from_city(city, country, API_KEY)
     except ValueError:
         return jsonify({"error": "City not found or invalid API request."}), 404
-    
+        
     url = build_weather_api_url(lat, lon, API_KEY)
     response_data, status_code = fetch_weather_data(url)
 

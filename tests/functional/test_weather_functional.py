@@ -108,20 +108,81 @@ def test_fetch_weather_data_failure(mock_get):
     assert status_code == 418
     assert response_data["error"] == "An unknown error occurred. Please try again later."
 
-@patch('website.weather_utils.get_lat_lon_from_city')
-@patch('website.weather_utils.fetch_weather_data')
-def test_get_weather(mock_fetch_weather_data, mock_get_lat_lon_from_city, client):
+@patch('website.views.get_lat_lon_from_city')
+@patch('requests.get') 
+def test_get_weather(mock_requests_get, mock_get_lat_lon_from_city, client):
+    """Test /weather endpoint with mocked API responses."""
     mock_get_lat_lon_from_city.return_value = (51.5074, -0.1278)
-    mock_fetch_weather_data.return_value = ({"name": "London", "temp": 22, "description": "Clear sky"}, 200)
+    mocked_response = {
+        "current": {
+            "temp": 22,
+            "feels_like": 21,
+            "pressure": 1012,
+            "humidity": 60,
+            "wind_speed": 5.2,
+            "visibility": 10000,
+            "clouds": 40,
+            "sunrise": 1625034900,
+            "sunset": 1625088900,
+            "dew_point": 15,
+            "weather": [{"main": "Clear", "icon": "01d"}],
+        },
+        "daily": [{"summary": "Sunny all day."}]
+    }
+
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = mocked_response
+    mock_requests_get.return_value = mock_response
+
     response = client.get('/weather?city=London&country=GB')
     assert response.status_code == 200
     data = response.get_json()
-    assert data['clouds'] == 40
+    assert data["temperature"] == 22
+    assert data["description"] == "Clear"
+    assert data["humidity"] == 60
 
-@patch('website.weather_utils.get_lat_lon_from_city')
-def test_get_weather_value_error(mock_get_lat_lon_from_city, client):
-    mock_get_lat_lon_from_city.side_effect = ValueError
-    response = client.get('/weather?city=London&country=XX')
-    assert response.status_code == 404
+@patch('website.views.get_lat_lon_from_city')
+@patch('requests.get') 
+def test_get_weather(mock_requests_get, mock_get_lat_lon_from_city, client):
+    """Test /weather endpoint with mocked API responses."""
+    mock_get_lat_lon_from_city.return_value = (51.5074, -0.1278)
+    mocked_response = {
+        "current": {
+            "temp": 22,
+            "feels_like": 21,
+            "pressure": 1012,
+            "humidity": 60,
+            "wind_speed": 5.2,
+            "visibility": 10000,
+            "clouds": 40,
+            "sunrise": 1625034900,
+            "sunset": 1625088900,
+            "dew_point": 15,
+            "weather": [{"main": "Clear", "icon": "01d"}],
+        },
+        "daily": [{"summary": "Sunny all day."}]
+    }
+
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = mocked_response
+    mock_requests_get.return_value = mock_response
+
+    response = client.get('/weather?city=London&country=GB')
+    assert response.status_code == 200
     data = response.get_json()
-    assert data['error'] == 'City not found or invalid API request.'
+    assert data["temperature"] == 22
+    assert data["description"] == "Clear"
+    assert data["humidity"] == 60
+
+
+@patch('website.views.get_lat_lon_from_city') 
+@patch('requests.get')
+def test_get_weather_value_error(mock_requests_get, mock_get_lat_lon_from_city, client):
+    """Test /weather endpoint with mocked API responses."""
+    
+    mock_get_lat_lon_from_city.side_effect = ValueError("City not found")
+    response = client.get('/weather?city=London&country=GB')
+    assert response.status_code == 404
+    assert response.json == {"error": "City not found or invalid API request."}
