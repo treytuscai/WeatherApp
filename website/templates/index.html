@@ -31,14 +31,16 @@
 </head>
 
 <body class="bg-dark">
-    <main class="main-content position-relative border-radius-lg" style="min-width: 450px;">
+    <div id="particles-js" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></div>
+
         <!-- Weather Information Card -->
         <div class="container mt-5">
             <div class="card text-dark bg-white shadow-lg p-3 rounded"
                 style="max-width: 600px; margin: auto; position: relative;">
                 <!-- City Dropdown Selector -->
                 <div class="dropdown position-absolute text-white" style="top: -30px; left: 15px;">
-                    <span id="cityDropdown" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" style="cursor: pointer;">
+                    <span id="cityDropdown" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false"
+                        style="cursor: pointer;">
                         Waterville, US <i class="bi bi-caret-down-fill"></i>
                     </span>
                     <div class="dropdown-menu p-3" aria-labelledby="cityDropdown" style="min-width: 300px;">
@@ -50,8 +52,8 @@
                             </div>
                             <div class="mb-3">
                                 <label for="countryInput" class="form-label">Country</label>
-                                <input type="text" class="form-control" id="countryInput" placeholder="Example: FR (2-letter country code)"
-                                    required />
+                                <input type="text" class="form-control" id="countryInput"
+                                    placeholder="Example: FR (2-letter country code)" required />
                             </div>
                             <button type="submit" class="btn btn-dark w-100">Get Weather</button>
                             <div id="weather-error" class="alert alert-danger mt-3" style="display: none;">
@@ -105,8 +107,10 @@
         </div>
     </main>
     <!--   Core JS Files   -->
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script src="../static/assets/js/dashboard.js"></script>
     <script src="../static/assets/js/core/popper.min.js"></script>
     <script src="../static/assets/js/core/bootstrap.min.js"></script>
 </body>
+
 </html>

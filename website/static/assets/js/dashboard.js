@@ -58,6 +58,13 @@ function displayError(message) {
 
 window.addEventListener('DOMContentLoaded', () => {
     fetchWeatherData('Waterville', 'US');
+    particlesJS('particles-js', {
+        particles: {
+            number: { value: 50 },
+            size: { value: 3 },
+            move: { speed: 1, direction: "none" },
+        }
+    });
 });
 
 const cityForm = document.getElementById('cityForm');
