@@ -94,15 +94,6 @@ def test_get_weather_invalid_city_format(client):
     assert response.status_code == 400
     assert data["error"] == "Invalid city or country format."
 
-@patch("website.weather_utils.get_lat_lon_from_city") 
-@patch("website.weather_utils.fetch_weather_data")
-def test_get_weather_success(mock_fetch_weather_data, mock_get_lat_lon_from_city, mock_weather_response, mock_lat_lon_response, client):
-    """Test if /weather endpoint returns a 200 status code with correct data."""
-    mock_get_lat_lon_from_city.return_value = (mock_lat_lon_response["lat"], mock_lat_lon_response["lon"])
-    mock_fetch_weather_data.return_value = (mock_weather_response, 200)
-    response = client.get("/weather?city=London&country=GB")
-    assert response.status_code == 200
-
 
 @patch('requests.get')
 def test_fetch_weather_data_failure(mock_get):
@@ -116,3 +107,21 @@ def test_fetch_weather_data_failure(mock_get):
     response_data, status_code = fetch_weather_data("http://api.openweathermap.org/data/2.5/weather?q=London&appid=your_api_key")
     assert status_code == 418
     assert response_data["error"] == "An unknown error occurred. Please try again later."
+
+@patch('website.weather_utils.get_lat_lon_from_city')
+@patch('website.weather_utils.fetch_weather_data')
+def test_get_weather(mock_fetch_weather_data, mock_get_lat_lon_from_city, client):
+    mock_get_lat_lon_from_city.return_value = (51.5074, -0.1278)
+    mock_fetch_weather_data.return_value = ({"name": "London", "temp": 22, "description": "Clear sky"}, 200)
+    response = client.get('/weather?city=London&country=GB')
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data['clouds'] == 40
+
+@patch('website.weather_utils.get_lat_lon_from_city')
+def test_get_weather_value_error(mock_get_lat_lon_from_city, client):
+    mock_get_lat_lon_from_city.side_effect = ValueError
+    response = client.get('/weather?city=London&country=XX')
+    assert response.status_code == 404
+    data = response.get_json()
+    assert data['error'] == 'City not found or invalid API request.'
