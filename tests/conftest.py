@@ -1,15 +1,20 @@
 # conftest.py
+import sys
+import os
 import pytest
-from app import app
 
-@pytest.fixture
+# Pytest Coverage Fix
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from website import create_app
+
+@pytest.fixture(scope='module')
 def client():
     """Create a test client for Flask app."""
-    app.config["TESTING"] = True
-    with app.test_client() as client:
+    flask_app = create_app()
+    with flask_app.test_client() as client:
         yield client
 
-@pytest.fixture
+@pytest.fixture(scope='module')
 def mock_weather_response():
     """Mock OpenWeather API response."""
     return {

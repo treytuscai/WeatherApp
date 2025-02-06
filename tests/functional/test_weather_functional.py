@@ -6,9 +6,14 @@ from website.weather_utils import (
     parse_weather_response,
 )
 
+def test_home_page(client):
+    """Tests empty home page"""
+    response = client.get('/')
+    assert response.status_code == 200
+
 @patch("requests.get")
 def test_weather_utils(mock_get, mock_weather_response):
-    """Functional test integrating all helper functions."""
+    """Tests integrating all helper functions."""
     API_KEY = "test_api_key"
     CITY = "London"
     COUNTRY = "GB"
