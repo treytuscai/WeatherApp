@@ -14,7 +14,7 @@ Welcome to **WeatherApp**, a sleek and simple weather forecasting web applicatio
 - **Flask**: Web framework for building the app.
 - **OpenWeatherMap API**: To fetch real-time weather data.
 - **Heroku**: To host the app and make it accessible online.
-- **HTML/JS/Boostrap**: For the website's frontend interface.
+- **HTML/JS/Bootstrap**: For the website's frontend interface.
 
 ## 🚀 Getting Started
 
