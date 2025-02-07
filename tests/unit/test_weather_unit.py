@@ -64,7 +64,7 @@ def test_parse_weather_response():
         "dew_point": 20.0
     }
 
-    parsed_data = parse_weather_response(mock_response)
+    parsed_data = parse_weather_response(mock_response, 0, 0)
 
     # Assert that the parsed data matches the expected data
     assert parsed_data["temperature"] == expected_data["temperature"]

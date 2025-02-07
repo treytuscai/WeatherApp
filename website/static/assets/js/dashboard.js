@@ -26,6 +26,7 @@ function fetchWeatherData(city, country) {
 
             // Update the weather UI with the data
             const weather = data;
+            console.log(data)
 
             // Update temperature
             document.getElementById('temperature').textContent = `${weather.temperature}°C`;
@@ -43,6 +44,12 @@ function fetchWeatherData(city, country) {
 
             const iconUrl = `https://openweathermap.org/img/wn/${data.icon}.png`;
             document.getElementById("weather-icon").src = iconUrl;
+
+            document.getElementById('latitude').textContent = weather.latitude
+            document.getElementById('longitude').textContent = weather.longitude
+            document.getElementById('uvi').textContent = `${weather.uvi}`
+            document.getElementById('clouds').textContent = `${weather.clouds}%`
+            updateMap(weather.latitude, weather.longitude);
         })
         .catch(error => {
             console.error('Error fetching weather data:', error);
@@ -62,33 +69,3 @@ function toTitleCase(str) {
 
 // Update the city to title case
 document.getElementById('cityInput').addEventListener('input', function () {
-    this.value = toTitleCase(this.value);
-});
-
-
-function displayError(message) {
-    const errorSection = document.getElementById('weather-error');
-    const errorMessage = document.getElementById('error-message');
-    errorMessage.textContent = message;
-    errorSection.style.display = 'block';
-}
-
-window.addEventListener('DOMContentLoaded', () => {
-    fetchWeatherData('Waterville', 'US');
-    particlesJS('particles-js', {
-        particles: {
-            number: { value: 50 },
-            size: { value: 3 },
-            move: { speed: 1, direction: "none" },
-        }
-    });
-});
-
-const cityForm = document.getElementById('cityForm');
-
-cityForm.addEventListener('submit', function (event) {
-    event.preventDefault();
-    const city = document.getElementById('cityInput').value;
-    const country = document.getElementById('countryInput').value;
-    fetchWeatherData(city, country);
-});

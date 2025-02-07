@@ -44,7 +44,7 @@ def test_weather_utils(mock_get, mock_weather_response):
     assert response_data == mock_weather_response
 
     # Parse the weather data
-    parsed_data = parse_weather_response(response_data)
+    parsed_data = parse_weather_response(response_data, lat, lon)
 
     # Test the parsed data
     assert parsed_data["temperature"] == None
@@ -60,6 +60,7 @@ def test_weather_utils(mock_get, mock_weather_response):
     assert parsed_data["sunrise"] == None
     assert parsed_data["sunset"] == None
     assert parsed_data["dew_point"] == None
+
 
 
 def test_get_weather_missing_city(client):
