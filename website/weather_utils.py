@@ -2,12 +2,14 @@ import requests
 import re
 
 def validate_city_and_country(city: str, country: str) -> bool:
-    """Validates the city and country format."""
+    """Validates the city and country format, allowing spaces in city names."""
     if not city or not country:
         return False
-    if not city.isalnum() or not re.match("^[a-zA-Z\\s]*$", city):
+    # Allow only letters and spaces in the city name.
+    if not re.fullmatch(r"[A-Za-z\s]+", city):
         return False
-    if not re.match("^[A-Z]{2}$", country):
+    # Country must be exactly two uppercase letters.
+    if not re.fullmatch(r"[A-Z]{2}", country):
         return False
     return True
 

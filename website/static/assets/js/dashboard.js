@@ -49,6 +49,23 @@ function fetchWeatherData(city, country) {
         });
 }
 
+// Convert the country code to uppercase 
+document.getElementById('countryInput').addEventListener('input', function () {
+    this.value = this.value.toUpperCase();
+});
+
+function toTitleCase(str) {
+    return str.replace(/\w\S*/g, function (txt) {
+        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+    });
+}
+
+// Update the city to title case
+document.getElementById('cityInput').addEventListener('input', function () {
+    this.value = toTitleCase(this.value);
+});
+
+
 function displayError(message) {
     const errorSection = document.getElementById('weather-error');
     const errorMessage = document.getElementById('error-message');
@@ -70,7 +87,7 @@ window.addEventListener('DOMContentLoaded', () => {
 const cityForm = document.getElementById('cityForm');
 
 cityForm.addEventListener('submit', function (event) {
-    event.preventDefault(); 
+    event.preventDefault();
     const city = document.getElementById('cityInput').value;
     const country = document.getElementById('countryInput').value;
     fetchWeatherData(city, country);

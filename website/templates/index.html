@@ -50,10 +50,12 @@
                                     required />
                             </div>
                             <div class="mb-3">
-                                <label for="countryInput" class="form-label">Country</label>
+                                <label for="countryInput" class="form-label">Country Code</label>
                                 <input type="text" class="form-control" id="countryInput"
-                                    placeholder="Example: FR (2-letter country code)" required />
-                            </div>
+                                       placeholder="Example: FR (2-letter country code)"
+                                       pattern="[A-Z]{2}" 
+                                       title="Country code must be 2 uppercase letters" />
+                              </div>
                             <button type="submit" class="btn btn-dark w-100">Get Weather</button>
                             <div id="weather-error" class="alert alert-danger mt-3" style="display: none;">
                                 <strong>Error:</strong> <span id="error-message"></span>
