@@ -101,4 +101,89 @@
                         </div>
                         <div class="col">
                             <p class="mb-1">Pressure</p>
-                        
+                            <h6 class="fw-bold" id="pressure"></h6>
+                        </div>
+                        <div class="col">
+                            <p class="mb-1">Dew Point</p>
+                            <h6 class="fw-bold" id="dew-point"></h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Map Card (Right Column) -->
+            <div class="col-md-5 mb-4">
+                <div class="card text-dark bg-white shadow-lg p-3 rounded" style="height: 100%;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-2">Weather Location</h5>
+                        </div>
+                    </div>
+                    <!-- Map Section -->
+                    <div id="map" class="rounded" style="width: 100%; height: 200px;">
+                        <script>
+                            // Initialize the map
+                            var map = L.map('map').setView([20, 0], 2); // Centered on the world
+
+                            // Add a tile layer (OpenStreetMap)
+                            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                                attribution: '&copy; OpenStreetMap contributors'
+                            }).addTo(map);
+                        </script>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Second Row: Additional Info Cards -->
+        <div class="row justify-content-center">
+            <!-- Info Card 1 -->
+            <div class="col-auto mb-3">
+                <div class="card" style="max-width: 150px;">
+                    <div class="card-body p-2 text-center">
+                        <p class="text-uppercase mb-1" id="info-card-1-title">Latitude</p>
+                        <i class="bi bi-geo-alt"></i>
+                        <p class="mb-0" id="latitude"></p>
+                    </div>
+                </div>
+            </div>
+            <!-- Info Card 2 -->
+            <div class="col-auto mb-3">
+                <div class="card" style="max-width: 150px;">
+                    <div class="card-body p-2 text-center">
+                        <p class="text-uppercase mb-1" id="info-card-2-title">Longitude</p>
+                        <i class="bi bi-geo-alt"></i>
+                        <p class="mb-0" id="longitude"></p>
+                    </div>
+                </div>
+            </div>
+            <!-- Info Card 3 -->
+            <div class="col-auto mb-3">
+                <div class="card" style="max-width: 150px;">
+                    <div class="card-body p-2 text-center">
+                        <p class="text-uppercase mb-1" id="info-card-3-title">UV Index</p>
+                        <i class="bi bi-thermometer-sun"></i>
+                        <p class="mb-0" id="uvi"></p>
+                    </div>
+                </div>
+            </div>
+            <!-- Info Card 4 -->
+            <div class="col-auto mb-3">
+                <div class="card" style="max-width: 150px;">
+                    <div class="card-body p-2 text-center">
+                        <p class="text-uppercase mb-1" id="info-card-4-title">Cloudiness</p>
+                        <i class="bi bi-cloud"></i>
+                        <p class="mb-0" id="clouds"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--   Core JS Files   -->
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="../static/assets/js/dashboard.js"></script>
+    <script src="../static/assets/js/core/popper.min.js"></script>
+    <script src="../static/assets/js/core/bootstrap.min.js"></script>
+</body>
+
+</html>

@@ -69,3 +69,46 @@ function toTitleCase(str) {
 
 // Update the city to title case
 document.getElementById('cityInput').addEventListener('input', function () {
+    this.value = toTitleCase(this.value);
+});
+
+// Update Leaflet map with new lat/lon
+function updateMap(lat, lon) {
+    map.setView([lat, lon], 10); // Adjust zoom level
+
+    // Remove existing marker (if any)
+    if (window.weatherMarker) {
+        map.removeLayer(window.weatherMarker);
+    }
+
+    // Add a new marker for the location
+    window.weatherMarker = L.marker([lat, lon]).addTo(map)
+}
+
+
+function displayError(message) {
+    const errorSection = document.getElementById('weather-error');
+    const errorMessage = document.getElementById('error-message');
+    errorMessage.textContent = message;
+    errorSection.style.display = 'block';
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    fetchWeatherData('Waterville', 'US');
+    particlesJS('particles-js', {
+        particles: {
+            number: { value: 50 },
+            size: { value: 3 },
+            move: { speed: 1, direction: "none" },
+        }
+    });
+});
+
+const cityForm = document.getElementById('cityForm');
+
+cityForm.addEventListener('submit', function (event) {
+    event.preventDefault();
+    const city = document.getElementById('cityInput').value;
+    const country = document.getElementById('countryInput').value;
+    fetchWeatherData(city, country);
+});
