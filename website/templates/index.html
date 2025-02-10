@@ -138,42 +138,70 @@
         <!-- Second Row: Additional Info Cards -->
         <div class="row justify-content-center">
             <!-- Info Card 1 -->
-            <div class="col-auto mb-3">
-                <div class="card" style="max-width: 150px;">
+            <div class="col-sm-4 mb-4 min-width" style="min-width: 150px;">
+                <div class="card">
                     <div class="card-body p-2 text-center">
-                        <p class="text-uppercase mb-1" id="info-card-1-title">Latitude</p>
-                        <i class="bi bi-geo-alt"></i>
+                        <h6 class="text-uppercase text-dark mb-1" id="info-card-1-title">City, Country</h6>
+                        <i class="bi bi-globe-americas text-dark"></i>
+                        <p class="mb-0" id="name"></p>
+                    </div>
+                </div>
+            </div>
+            <!-- Info Card 1 -->
+            <div class="col-sm-2 mb-4" style="min-width: 150px;">
+                <div class="card">
+                    <div class="card-body p-2 text-center">
+                        <h6 class="text-uppercase text-dark mb-1" id="info-card-1-title">Latitude</h6>
+                        <i class="bi bi-geo-alt text-dark"></i>
                         <p class="mb-0" id="latitude"></p>
                     </div>
                 </div>
             </div>
             <!-- Info Card 2 -->
-            <div class="col-auto mb-3">
-                <div class="card" style="max-width: 150px;">
+            <div class="col-sm-2 mb-4" style="min-width: 150px;">
+                <div class="card">
                     <div class="card-body p-2 text-center">
-                        <p class="text-uppercase mb-1" id="info-card-2-title">Longitude</p>
-                        <i class="bi bi-geo-alt"></i>
+                        <h6 class="text-uppercase text-dark mb-1" id="info-card-2-title">Longitude</h6>
+                        <i class="bi bi-geo-alt text-dark"></i>
                         <p class="mb-0" id="longitude"></p>
                     </div>
                 </div>
             </div>
             <!-- Info Card 3 -->
-            <div class="col-auto mb-3">
-                <div class="card" style="max-width: 150px;">
+            <div class="col-sm-2 mb-4" style="min-width: 150px;">
+                <div class="card">
                     <div class="card-body p-2 text-center">
-                        <p class="text-uppercase mb-1" id="info-card-3-title">UV Index</p>
-                        <i class="bi bi-thermometer-sun"></i>
+                        <h6 class="text-uppercase text-dark mb-1" id="info-card-3-title">UV Index</h6>
+                        <i class="bi bi-thermometer-sun text-dark"></i>
                         <p class="mb-0" id="uvi"></p>
                     </div>
                 </div>
             </div>
             <!-- Info Card 4 -->
-            <div class="col-auto mb-3">
-                <div class="card" style="max-width: 150px;">
+            <div class="col-sm-2 mb-4" style="min-width: 150px;">
+                <div class="card">
                     <div class="card-body p-2 text-center">
-                        <p class="text-uppercase mb-1" id="info-card-4-title">Cloudiness</p>
-                        <i class="bi bi-cloud"></i>
+                        <h6 class="text-uppercase text-dark mb-1" id="info-card-4-title">Cloudiness</h6>
+                        <i class="bi bi-cloud text-dark"></i>
                         <p class="mb-0" id="clouds"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Full-width Rotating Weather Fun Fact Card using Bootstrap classes only -->
+        <div class="row">
+            <div class="col-12 mb-4">
+                <div class="card bg-white text-dark shadow-lg p-4 rounded">
+                    <div class="card-body text-center">
+                        <h5 class="card-title d-flex justify-content-center align-items-center gap-2">
+                            Weather Fun Facts
+                            <!-- Bootstrap Icon (without extra animation) -->
+                            <i class="bi bi-lightning-fill" style="font-size: 1.5rem;"></i>
+                        </h5>
+                        <p class="card-text" id="weatherFact">
+                            Did you know? A single bolt of lightning can contain up to one billion volts of electricity!
+                        </p>
                     </div>
                 </div>
             </div>

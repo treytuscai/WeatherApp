@@ -45,6 +45,7 @@ function fetchWeatherData(city, country) {
             const iconUrl = `https://openweathermap.org/img/wn/${data.icon}.png`;
             document.getElementById("weather-icon").src = iconUrl;
 
+            document.getElementById('name').textContent = `${city}, ${country}`
             document.getElementById('latitude').textContent = weather.latitude
             document.getElementById('longitude').textContent = weather.longitude
             document.getElementById('uvi').textContent = `${weather.uvi}`
@@ -93,6 +94,35 @@ function displayError(message) {
     errorSection.style.display = 'block';
 }
 
+// Function to initialize and rotate the Weather Fun Facts
+function initWeatherFunFacts() {
+    const factElement = document.getElementById('weatherFact');
+    if (!factElement) return; // If the element is not found, exit.
+
+    const facts = [
+        "A single bolt of lightning can contain up to one billion volts of electricity!",
+        "Raindrops can fall at speeds of up to 22 miles per hour.",
+        "Snowflakes are unique; no two are exactly alike.",
+        "The highest temperature ever recorded on Earth was 134°F (56.7°C).",
+        "Lightning strikes the Earth 100 times every second."
+    ];
+
+    let currentIndex = 0;
+    // Ensure a smooth fade transition is applied
+    factElement.style.transition = "opacity 0.5s ease-in-out";
+
+    setInterval(() => {
+        // Fade out the current fact
+        factElement.style.opacity = 0;
+        // After the fade-out transition, update the text and fade back in
+        setTimeout(() => {
+            currentIndex = (currentIndex + 1) % facts.length;
+            factElement.textContent = facts[currentIndex];
+            factElement.style.opacity = 1;
+        }, 500);
+    }, 5000);
+}
+
 window.addEventListener('DOMContentLoaded', () => {
     fetchWeatherData('Waterville', 'US');
     particlesJS('particles-js', {
@@ -102,6 +132,7 @@ window.addEventListener('DOMContentLoaded', () => {
             move: { speed: 1, direction: "none" },
         }
     });
+    initWeatherFunFacts();
 });
 
 const cityForm = document.getElementById('cityForm');
