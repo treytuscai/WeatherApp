@@ -25,4 +25,4 @@ jobs:
          pylint $(git ls-files '*.py')
     - name: Testing the code with pytest
       run: |
-        pytest -v --cov=website --cov-report=term-missing tests
+        python -m pytest -v
