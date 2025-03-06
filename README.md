@@ -21,7 +21,7 @@ Welcome to **WeatherApp**, a sleek and simple weather forecasting web applicatio
 1. **Clone the Repository**:
 
    ```bash
-   git clone https://github.com/tvtusc25/weatherapp.git
+   git clone https://github.com/treytuscai/weatherapp.git
    cd weatherapp
    ```
 
